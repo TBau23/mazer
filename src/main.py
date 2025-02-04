@@ -40,7 +40,7 @@ class Line:
         canvas.create_line(self.p1.x, self.p1.y, self.p2.x, self.p2.y, fill=fill_color, width=2)
 
 class Cell:
-    def __init__(self, x, y, cell_size_x, cell_size_y, window):
+    def __init__(self, x, y, cell_size_x, cell_size_y, window=None):
         self.upper_left_x = x
         self.upper_left_y = y
         self.lower_right_x = x + cell_size_x
@@ -52,7 +52,6 @@ class Cell:
         self._window = window
 
     def draw(self):
-        print('DRAWING CELL', self.upper_left_x, self.upper_left_y, self.lower_right_x, self.lower_right_y)
         if self.left_wall:
             line = Line(Point(self.upper_left_x, self.upper_left_y), Point(self.upper_left_x, self.lower_right_y))
             self._window.draw_line(line)
@@ -83,7 +82,7 @@ class Maze:
             num_cols,
             cell_size_x,
             cell_size_y,
-            win,
+            win=None,
             seed=None
             ):
         self._x_origin = x_origin
@@ -96,7 +95,7 @@ class Maze:
         self._seed = seed
         self._create_cells()
 
-        # move cell size out of cell class and into maze class
+        # move cell size out of cell class and into maze class?
     
     def _create_cells(self):
         self._cells = []
@@ -105,9 +104,10 @@ class Maze:
             for j in range(self._num_cols):
                 row.append(Cell(j*self._cell_size_x + self._x_origin , i*self._cell_size_y + self._y_origin, self._cell_size_x, self._cell_size_y, self._win))
             self._cells.append(row)
-        for row in self._cells:
-            for cell in row:
-                cell.draw()
+        if self._win:
+            for row in self._cells:
+                for cell in row:
+                    cell.draw()
         
     
     def _animate(self):
@@ -116,11 +116,11 @@ class Maze:
         
         
 def main():
-    win = Window(800, 600)
+    win = Window(1000, 800)
     l1 = Line(Point(0, 100), Point(100, 100))
     l2 = Line(Point(100, 0 ), Point(100, 100))
 
-    maze = Maze(100, 100, 10, 7, 25, 25, win)
+    maze = Maze(200, 200, 15, 15, 30, 30, win)
 
     maze._cells[0][0].draw_move(maze._cells[4][2])
     win.draw_line(l1, fill_color="red")
@@ -130,4 +130,4 @@ def main():
 
     win.wait_for_close()
         
-main()
+# main()
