@@ -110,11 +110,12 @@ class Maze:
         for i in range(self._num_rows):
             row = []
             for j in range(self._num_cols):
-                row.append(Cell(j*self._cell_size_x + self._x_origin , i*self._cell_size_y + self._y_origin, self._cell_size_x, self._cell_size_y, self._win))
+                new_cell = Cell(j*self._cell_size_x + self._x_origin , i*self._cell_size_y + self._y_origin, self._cell_size_x, self._cell_size_y, self._win)
+                row.append(new_cell)
+                new_cell.draw()
+                self._animate()
             self._cells.append(row)
-        for row in self._cells:
-            for cell in row:
-                cell.draw()
+
         
     def _animate(self):
         self._win.redraw()
