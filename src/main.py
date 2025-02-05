@@ -52,18 +52,25 @@ class Cell:
         self._window = window
 
     def draw(self):
-        if self.left_wall:
-            line = Line(Point(self.upper_left_x, self.upper_left_y), Point(self.upper_left_x, self.lower_right_y))
-            self._window.draw_line(line)
-        if self.right_wall:
-            line = Line(Point(self.lower_right_x, self.upper_left_y), Point(self.lower_right_x, self.lower_right_y))
-            self._window.draw_line(line)
-        if self.top_wall:
-            line = Line(Point(self.upper_left_x, self.upper_left_y), Point(self.lower_right_x, self.upper_left_y))
-            self._window.draw_line(line)
-        if self.bottom_wall:
-            line = Line(Point(self.upper_left_x, self.lower_right_y), Point(self.lower_right_x, self.lower_right_y))
-            self._window.draw_line(line)
+        if self._window is None:
+            return
+
+        def color_wall(wall):
+            return "black" if wall else "white"
+        
+        left_wall_line = Line(Point(self.upper_left_x, self.upper_left_y), Point(self.upper_left_x, self.lower_right_y))
+        self._window.draw_line(left_wall_line, color_wall(self.left_wall))       
+
+        right_wall_line = Line(Point(self.lower_right_x, self.upper_left_y), Point(self.lower_right_x, self.lower_right_y))
+        self._window.draw_line(right_wall_line, color_wall(self.right_wall))
+ 
+        top_wall_line = Line(Point(self.upper_left_x, self.upper_left_y), Point(self.lower_right_x, self.upper_left_y))
+        self._window.draw_line(top_wall_line, color_wall(self.top_wall))
+
+        bottom_wall_line = Line(Point(self.upper_left_x, self.lower_right_y), Point(self.lower_right_x, self.lower_right_y))
+        self._window.draw_line(bottom_wall_line, color_wall(self.bottom_wall))
+
+
     def draw_move(self, to_cell, undo=False):
         x_from_cell = (self.upper_left_x + self.lower_right_x) / 2
         y_from_cell = (self.upper_left_y + self.lower_right_y) / 2
@@ -94,6 +101,7 @@ class Maze:
         self._win = win
         self._seed = seed
         self._create_cells()
+        self._break_entrance_and_exit()
 
         # move cell size out of cell class and into maze class?
     
@@ -104,15 +112,21 @@ class Maze:
             for j in range(self._num_cols):
                 row.append(Cell(j*self._cell_size_x + self._x_origin , i*self._cell_size_y + self._y_origin, self._cell_size_x, self._cell_size_y, self._win))
             self._cells.append(row)
-        if self._win:
-            for row in self._cells:
-                for cell in row:
-                    cell.draw()
+        for row in self._cells:
+            for cell in row:
+                cell.draw()
         
-    
     def _animate(self):
         self._win.redraw()
         time.sleep(0.05)
+    
+    def _break_entrance_and_exit(self):
+        if self._cells:
+            self._cells[0][0].top_wall = False
+            self._cells[0][0].draw()
+            self._cells[self._num_rows-1][self._num_cols-1].bottom_wall = False
+            self._cells[self._num_rows-1][self._num_cols-1].draw()
+
         
         
 def main():
@@ -130,4 +144,4 @@ def main():
 
     win.wait_for_close()
         
-# main()
+main()
