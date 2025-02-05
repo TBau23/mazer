@@ -1,5 +1,6 @@
 from tkinter import Tk, BOTH, Canvas
 import time
+import random
 
 class Window:
     def __init__(self, width, height):
@@ -50,6 +51,7 @@ class Cell:
         self.top_wall = True
         self.bottom_wall = True
         self._window = window
+        self.visited = False
 
     def draw(self):
         if self._window is None:
@@ -99,7 +101,7 @@ class Maze:
         self._cell_size_x = cell_size_x
         self._cell_size_y = cell_size_y
         self._win = win
-        self._seed = seed
+        self._seed = None if seed is None else random.seed(seed)
         self._create_cells()
         self._break_entrance_and_exit()
 
@@ -127,6 +129,40 @@ class Maze:
             self._cells[0][0].draw()
             self._cells[self._num_rows-1][self._num_cols-1].bottom_wall = False
             self._cells[self._num_rows-1][self._num_cols-1].draw()
+    
+    def _break_walls_r(self, i, j):
+        self._cells[i][j].visited = True
+        while True:
+            next_options = []
+            # above
+            if i > 0 and not self._cells[i - 1][j].visited:
+                next_options.append((i - 1, j, 'top'))
+            # below
+            if i < self._num_rows - 1 and not self._cells[i + 1][j].visited:
+                next_options.append((i + 1, j, 'bottom'))
+            # left
+            if j > 0 and not self._cells[i][j - 1].visited:
+                next_options.append((i, j - 1, 'left'))
+            # right
+            if j < self._num_cols - 1 and not self._cells[i][j + 1].visited:
+                next_options.append((i, j + 1, 'right'))
+            
+            if len(next_options) == 0:
+                self._cells[i][j].draw()
+                self._animate()
+                return
+            
+            inverse_direction = {
+                'top': 'bottom',
+                'bottom': 'top',
+                'left': 'right',
+                'right': 'left'
+            }
+            choice = random.choice(next_options)
+            self._cells[i][j][f'{choice[2]}_wall'] = False
+            self._cells[choice[0]][choice[1]][f'{inverse_direction[choice[2]]}_wall'] = False
+            self._break_walls_r(choice[0], choice[1])
+
 
         
         
