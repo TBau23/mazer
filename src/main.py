@@ -104,6 +104,8 @@ class Maze:
         self._seed = None if seed is None else random.seed(seed)
         self._create_cells()
         self._break_entrance_and_exit()
+        self._break_walls_r(0, 0)
+        self._reset_cells_visited()
 
         # move cell size out of cell class and into maze class?
     
@@ -120,8 +122,9 @@ class Maze:
 
         
     def _animate(self):
-        self._win.redraw()
-        time.sleep(0.05)
+        if self._win:
+            self._win.redraw()
+            time.sleep(0.02)
     
     def _break_entrance_and_exit(self):
         if self._cells:
@@ -159,23 +162,65 @@ class Maze:
                 'right': 'left'
             }
             choice = random.choice(next_options)
-            self._cells[i][j][f'{choice[2]}_wall'] = False
-            self._cells[choice[0]][choice[1]][f'{inverse_direction[choice[2]]}_wall'] = False
+            setattr(self._cells[i][j], f'{choice[2]}_wall', False)
+            setattr(self._cells[choice[0]][choice[1]], f'{inverse_direction[choice[2]]}_wall', False)
             self._break_walls_r(choice[0], choice[1])
 
+    def _reset_cells_visited(self):
+        for row in self._cells:
+            for cell in row:
+                cell.visited = False
 
+    def solve(self):
+        return self._solve_r(0, 0)
+
+    def _solve_r(self, i, j):
+        current = self._cells[i][j]
+        current.visited = True
+
+        end_goal = self._cells[self._num_rows - 1][self._num_cols - 1]
+        if current == end_goal:
+            return True
         
+
+        next_options = []
+        # above
+        if not current.top_wall and i > 0 and not self._cells[i - 1][j].visited:
+            next_options.append((i - 1, j, 'top'))
+        # below
+        if not current.bottom_wall and i < self._num_rows - 1 and not self._cells[i + 1][j].visited:
+            next_options.append((i + 1, j, 'bottom'))
+        # left
+        if not current.left_wall and j > 0 and not self._cells[i][j - 1].visited:
+            next_options.append((i, j - 1, 'left'))
+        # right
+        if not current.right_wall and j < self._num_cols - 1 and not self._cells[i][j + 1].visited:
+            next_options.append((i, j + 1, 'right'))
+
+        for n in next_options:
+            next = self._cells[n[0]][n[1]]
+            current.draw_move(next)
+            self._animate()
+            success = self._solve_r(n[0], n[1])
+            if success:
+                return True
+            current.draw_move(next, True)
+            self._animate()
+                    
+        return False
+
         
 def main():
     win = Window(1000, 800)
     l1 = Line(Point(0, 100), Point(100, 100))
     l2 = Line(Point(100, 0 ), Point(100, 100))
 
-    maze = Maze(200, 200, 15, 15, 30, 30, win)
+    maze = Maze(200, 200, 10, 10, 30, 30, win)
+    maze.solve()
 
-    maze._cells[0][0].draw_move(maze._cells[4][2])
-    win.draw_line(l1, fill_color="red")
-    win.draw_line(l2, fill_color="red")
+    # maze._cells[0][0].draw_move(maze._cells[4][2])
+    # win.draw_line(l1, fill_color="red")
+    # win.draw_line(l2, fill_color="red")
 
 
 
