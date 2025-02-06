@@ -182,7 +182,6 @@ class Maze:
         if current == end_goal:
             return True
         
-
         next_options = []
         # above
         if not current.top_wall and i > 0 and not self._cells[i - 1][j].visited:
@@ -212,18 +211,15 @@ class Maze:
         
 def main():
     win = Window(1000, 800)
-    l1 = Line(Point(0, 100), Point(100, 100))
-    l2 = Line(Point(100, 0 ), Point(100, 100))
-
     maze = Maze(200, 200, 10, 10, 30, 30, win)
     maze.solve()
-
-    # maze._cells[0][0].draw_move(maze._cells[4][2])
-    # win.draw_line(l1, fill_color="red")
-    # win.draw_line(l2, fill_color="red")
-
-
-
     win.wait_for_close()
         
 main()
+
+
+# next steps
+# add bfs, a*, djikstras
+# improve visuals
+# 3d maze?
+# time all different algos and compare for given maze
