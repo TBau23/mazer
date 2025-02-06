@@ -173,6 +173,61 @@ class Maze:
 
     def solve(self):
         return self._solve_r(0, 0)
+    
+    def solve_bfs(self):
+        to_visit = [(0, 0)]
+        path = { (0,0) : None}
+        end_coords = (self._num_rows - 1, self._num_cols - 1)
+        end_goal = self._cells[end_coords[0]][end_coords[1]]
+        found_end = False
+        while to_visit:
+            curr_coords = to_visit.pop(0)
+            curr_cell = self._cells[curr_coords[0]][curr_coords[1]]
+            curr_cell.visited = True
+            if curr_cell == end_goal:
+                found_end = True
+                break
+            
+            # above
+            if not curr_cell.top_wall and curr_coords[0] > 0 and not self._cells[curr_coords[0] - 1][curr_coords[1]].visited:
+                to_visit.append((curr_coords[0] - 1, curr_coords[1]))
+                path[(curr_coords[0] - 1, curr_coords[1])] = curr_coords
+                curr_cell.draw_move(self._cells[curr_coords[0] - 1][curr_coords[1]], True)
+                self._animate()
+            # below
+            if not curr_cell.bottom_wall and curr_coords[0] < self._num_rows - 1 and not self._cells[curr_coords[0] + 1][curr_coords[1]].visited:
+                to_visit.append((curr_coords[0] + 1, curr_coords[1]))
+                path[(curr_coords[0] + 1, curr_coords[1])] = curr_coords
+                curr_cell.draw_move(self._cells[curr_coords[0] + 1][curr_coords[1]], True)
+                self._animate()
+            # left
+            if not curr_cell.left_wall and curr_coords[1] > 0 and not self._cells[curr_coords[0]][curr_coords[1] - 1].visited:
+                to_visit.append((curr_coords[0], curr_coords[1] - 1))
+                path[(curr_coords[0], curr_coords[1] - 1)] = curr_coords
+                curr_cell.draw_move(self._cells[curr_coords[0]][curr_coords[1] - 1], True)
+                self._animate()
+            # right
+            if not curr_cell.right_wall and curr_coords[1] < self._num_cols - 1 and not self._cells[curr_coords[0]][curr_coords[1] + 1].visited:
+                to_visit.append((curr_coords[0], curr_coords[1] + 1))
+                path[(curr_coords[0], curr_coords[1] + 1)] = curr_coords
+                curr_cell.draw_move(self._cells[curr_coords[0]][curr_coords[1] + 1], True)
+                self._animate()
+
+        path_reversed = []
+        curr_coords = end_coords
+        while curr_coords:
+            path_reversed.append(curr_coords)
+            curr_coords = path[curr_coords]
+        path_reversed.reverse()
+
+        for i in range(1, len(path_reversed)):
+            from_coords = path_reversed[i - 1]
+            to_coords = path_reversed[i]
+            self._cells[from_coords[0]][from_coords[1]].draw_move(self._cells[to_coords[0]][to_coords[1]])
+            self._animate()
+        
+
+        return found_end
 
     def _solve_r(self, i, j):
         current = self._cells[i][j]
@@ -208,7 +263,6 @@ class Maze:
                     
         return False
 
-        
 def main():
     win = Window(1000, 800)
     maze = Maze(200, 200, 10, 10, 30, 30, win)
