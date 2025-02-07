@@ -8,9 +8,34 @@ class Window:
         self.__root = Tk()
         self.__root.title("Maze Solver")
         self.canvas = Canvas(self.__root, width=width, height=height, bg="white")
-        self.canvas.pack()
+        self.canvas.pack(side='left')
         self.running = False
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
+        self.leaderboard_times = []
+        self.leaderboard_text = []
+        for i in range(5):  # Space for 5 algorithms
+            text = self.canvas.create_text(
+                width - 150, 
+                50 + i * 30,  # Stack vertically
+                text="",
+                font=("Arial", 12),
+                anchor="w"
+            )
+            self.leaderboard_text.append(text)
+        
+    def update_leaderboard(self, algorithm_name, time):
+        self.leaderboard_times.append((algorithm_name, time))
+
+        self.leaderboard_times.sort(key=lambda x: x[1])
+
+        for i, (algo, time) in enumerate(self.leaderboard_times):
+            self.canvas.itemconfig(
+                self.leaderboard_text[i], 
+                text=f"{algo}: {time:.2f}s",
+                fill="black"
+            )
+    
+    
     
     def redraw(self):
         self.__root.update_idletasks()
@@ -106,8 +131,27 @@ class Maze:
         self._break_entrance_and_exit()
         self._break_walls_r(0, 0)
         self._reset_cells_visited()
+        self.start_time = 0
 
-        # move cell size out of cell class and into maze class?
+    def clear_solution(self):
+        if self._win:
+            all_items = self._win.canvas.find_all()
+            for item in all_items:
+                if self._win.canvas.type(item) == "line":
+                    color = self._win.canvas.itemcget(item, "fill")
+                    if color in ["red", "gray"]:
+                        self._win.canvas.delete(item)
+            self._win.redraw()
+        self._reset_cells_visited()
+    
+    def start_timer(self):
+        self.start_time = time.time()
+    
+    def stop_timer(self, algorithm_name):
+        elapsed_time = time.time() - self.start_time
+        if self._win:
+            self._win.update_leaderboard(algorithm_name, elapsed_time)
+        return elapsed_time
     
     def _create_cells(self):
         self._cells = []
@@ -265,8 +309,19 @@ class Maze:
 
 def main():
     win = Window(1000, 800)
-    maze = Maze(200, 200, 10, 10, 30, 30, win)
+    maze = Maze(200, 200, 10, 1, 30, 30, win)
+
+    # Run DFS
+    maze.start_timer()
     maze.solve()
+    maze.stop_timer("DFS")
+
+    maze.clear_solution()
+    # Run BFS
+    maze.start_timer()
+    maze.solve_bfs()
+    maze.stop_timer("BFS")
+
     win.wait_for_close()
         
 main()
@@ -276,4 +331,4 @@ main()
 # a*, djikstras
 # improve visuals
 # 3d maze?
-# time all different algos and compare for given maze
+
