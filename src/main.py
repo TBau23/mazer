@@ -273,7 +273,7 @@ main()
 
 
 # next steps
-# add bfs, a*, djikstras
+# a*, djikstras
 # improve visuals
 # 3d maze?
 # time all different algos and compare for given maze
